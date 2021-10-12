@@ -1,3 +1,5 @@
+package models;
+
 import com.google.gson.JsonObject;
 
 public class Season {
@@ -28,7 +30,7 @@ public class Season {
 
   @Override
   public String toString() {
-    return "Season{" +
+    return "models.Season{" +
         "time=" + time +
         ", liftID=" + liftID +
         '}';

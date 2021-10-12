@@ -1,3 +1,5 @@
+package utils;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import java.io.IOException;
@@ -8,8 +10,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import models.Season;
 
-@WebServlet(name = "SkierServlet")
+@WebServlet(name = "utils.SkierServlet")
 public class SkierServlet extends HttpServlet {
 
 
@@ -33,8 +36,8 @@ public class SkierServlet extends HttpServlet {
       out.print(season);
       // TODO: catch out.print not getting sent to client -- work out how to send useful error info with 500 response
     } catch (JsonParseException e) {
-      LOGGER.log(null, "Skier post request must have time: int and liftId: int in the body.", e);
-      out.print("Skier post request must have time: int and liftId: int in the body.");
+      LOGGER.log(null, "models.Skier post request must have time: int and liftId: int in the body.", e);
+      out.print("models.Skier post request must have time: int and liftId: int in the body.");
     }
 
     out.flush();

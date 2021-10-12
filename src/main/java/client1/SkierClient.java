@@ -1,3 +1,5 @@
+package client1;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -7,7 +9,7 @@ import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 import java.io.*;
-import org.apache.commons.httpclient.params.HttpConnectionParams;
+import utils.CommandLineParser;
 
 /**
  * Multithreaded Java client can upload a day of lift rides to the server and exert various
@@ -43,7 +45,7 @@ public class SkierClient {
   public static void main(String[] args) throws UnsupportedEncodingException, InterruptedException {
 
     // Parse Command Line Input
-    // Parameters must be entered in format defined in CommandLineParser
+    // Parameters must be entered in format defined in utils.CommandLineParser
     // unsafeMap because not thread safe
     Map<String, Integer> unsafeParamMap = new CommandLineParser().parseArgs(args);
     if (unsafeParamMap.size() != 4) {

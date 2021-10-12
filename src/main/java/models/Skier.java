@@ -1,3 +1,5 @@
+package models;
+
 import java.util.logging.Logger;
 
 public class Skier {
