@@ -1,16 +1,25 @@
 package utils;
 
+import com.google.gson.Gson;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
-public class CSVWriter implements Runnable {
+public class JSONWriter implements Runnable {
+
+  private static final Gson gson = new Gson();
 
   BlockingQueue<String> queue;
   File filename;
   FileWriter fw;
 
-  public CSVWriter(BlockingQueue<String> queue, File fileName) throws IOException {
+  /**
+   * Sort of writes JSON... really it writes a string on a new line
+   * @param queue a blocking queue of strings
+   * @param fileName a file to write to
+   * @throws IOException
+   */
+  public JSONWriter(BlockingQueue<String> queue, File fileName) throws IOException {
     this.queue = queue;
     this.filename = fileName;
     this.fw = new FileWriter(this.filename, true);
@@ -18,7 +27,8 @@ public class CSVWriter implements Runnable {
 
   public synchronized void writeToFile() throws InterruptedException, IOException {
     String data =  this.queue.take(); // blocks until there is a block of data
-    this.fw.write(data + ", ");
+    // Uses new line character as delimiter
+    this.fw.write(data + "\n");
   }
 
   /**
@@ -36,14 +46,10 @@ public class CSVWriter implements Runnable {
     try {
       while(!this.queue.isEmpty()) {
         this.writeToFile();
+        this.fw.flush();
       }
     } catch (InterruptedException | IOException e) {
       Thread.currentThread().interrupt();
-    }
-    try {
-      this.fw.flush();
-    } catch (IOException e) {
-      e.printStackTrace();
     }
     try {
       this.fw.close();

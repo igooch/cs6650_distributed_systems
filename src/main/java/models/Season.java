@@ -1,7 +1,5 @@
 package models;
 
-import com.google.gson.JsonObject;
-
 public class Season {
 
   int time;

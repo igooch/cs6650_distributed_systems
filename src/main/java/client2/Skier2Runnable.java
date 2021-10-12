@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import models.ResponseData;
 import models.Season;
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpClient;
@@ -18,7 +19,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpMethodParams;
-import utils.CSVWriter;
+import utils.JSONWriter;
 
 public class Skier2Runnable implements Runnable {
 
@@ -140,19 +141,24 @@ public class Skier2Runnable implements Runnable {
       long responseTime = System.currentTimeMillis() - start;
       // Add response time to queue to be written
       try {
-        // TODO create string builder for record containing {start time, request type (ie POST), latency, response code}
-        String responseData = "{" + start + ", POST, " + responseTime + " , " + statusStr + "}";
-        this.queue.put(responseData);
+        ResponseData responseData = new ResponseData(start, "POST", responseTime, statusStr);
+        String jsonData = gson.toJson(responseData);
+        this.queue.put(jsonData);
       } catch (InterruptedException e) {
         e.printStackTrace();
+      }
+
+      // TODO remove this if this doesn't work
+      if (statusStr.equals("")) {
+        this.incFailed();
       }
 
     }
 
     // Write response times to csv file
     try {
-      CSVWriter csvWriter = new CSVWriter(this.queue, filename);
-      new Thread(csvWriter).start();
+      JSONWriter JSONWriter = new JSONWriter(this.queue, filename);
+      new Thread(JSONWriter).start();
     } catch (IOException e) {
       e.printStackTrace();
     }

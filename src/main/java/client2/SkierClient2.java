@@ -1,5 +1,6 @@
 package client2;
 
+import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Collections;
 import java.util.Map;
@@ -22,7 +23,7 @@ public class SkierClient2 {
   private static AtomicInteger failedRequests = new AtomicInteger(0);
   // For holding response times before being written to a csv file
   private static BlockingQueue<String> unboundedQueue = new LinkedBlockingQueue<>();
-  private static final File file = new File("responseTimes.csv");
+  private static final File file = new File("responseTimes.json");
 
   private static void runSkier(int threadTranche, int skierTranche, Map<String, Integer> safeParamMap,
       double percentage, int timeStart, int timeEnd, HttpClient client, CountDownLatch latch1,
