@@ -3,19 +3,14 @@ package utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import models.ResponseData;
-import models.Season;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class JSONReader {
 
@@ -27,7 +22,7 @@ public class JSONReader {
   File file;
   List<ResponseData> responseDataList;
 
-  public static List<ResponseData> read(File file) throws IOException, ParseException {
+  public static List<ResponseData> read(File file) throws IOException {
     List<ResponseData> responseData = new ArrayList<>();
     try {
       BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -46,7 +41,7 @@ public class JSONReader {
     return responseData;
   }
 
-  public JSONReader(File file) throws IOException, ParseException {
+  public JSONReader(File file) throws IOException {
     this.file = file;
     this.responseDataList = read(file);
   }
