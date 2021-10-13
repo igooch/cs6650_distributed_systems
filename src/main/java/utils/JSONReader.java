@@ -22,6 +22,13 @@ public class JSONReader {
   File file;
   List<ResponseData> responseDataList;
 
+  /**
+   * Parses a file with each line containing a JSON string representation
+   * of a ResponseData object.
+   * @param file File containing json string representations of ResponseData objects
+   * @return List of ResponseData objects
+   * @throws IOException Throws FileNotFoundException
+   */
   public static List<ResponseData> read(File file) throws IOException {
     List<ResponseData> responseData = new ArrayList<>();
     try {
@@ -47,6 +54,6 @@ public class JSONReader {
   }
 
   public List<ResponseData> getResponseDataList() {
-    return responseDataList;
+    return this.responseDataList;
   }
 }

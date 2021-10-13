@@ -1,17 +1,21 @@
 package client2;
 
-import com.google.gson.JsonObject;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
+import models.ResponseData;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import utils.CommandLineParser;
+import utils.JSONReader;
+import utils.ProcessResponseData;
 
 /**
  * Multithreaded Java client can upload a day of lift rides to the server and exert various
@@ -23,11 +27,10 @@ public class SkierClient2 {
   private static AtomicInteger failedRequests = new AtomicInteger(0);
   // For holding response times before being written to a csv file
   private static BlockingQueue<String> unboundedQueue = new LinkedBlockingQueue<>();
-  private static final File file = new File("responseTimes.json");
 
   private static void runSkier(int threadTranche, int skierTranche, Map<String, Integer> safeParamMap,
       double percentage, int timeStart, int timeEnd, HttpClient client, CountDownLatch latch1,
-      CountDownLatch latch2, String serverAddress) {
+      CountDownLatch latch2, String serverAddress, File file) {
     for (int i = 0; i < threadTranche; i++) {
       int start = (i * skierTranche) + 1;
       int end;
@@ -47,7 +50,7 @@ public class SkierClient2 {
     }
   }
 
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) throws InterruptedException, IOException {
 
     // Parse Command Line Input
     // Parameters must be entered in format defined in utils.CommandLineParser
@@ -61,6 +64,9 @@ public class SkierClient2 {
     // Convert to integer parameters to thread safe map
     Map<String, Integer> safeParamMap = Collections.synchronizedMap(unsafeParamMap);
     System.out.println(safeParamMap);
+
+    // Create output file
+    File file = new File("responseTimes" + safeParamMap.get("maxThreads") + ".txt");
 
     // Create the Client
     // Multiple threads in HttpClient allows the execution of multiple methods at once
@@ -99,7 +105,7 @@ public class SkierClient2 {
     CountDownLatch startPhase2 = new CountDownLatch((int) (threadTranche * 0.1));
     CountDownLatch countDownLatch1 = new CountDownLatch(threadTranche);
     runSkier(threadTranche, skierTranche, safeParamMap, 0.2, 1, 90,
-        client, startPhase2, countDownLatch1, serverAddress);
+        client, startPhase2, countDownLatch1, serverAddress, file);
     startPhase2.await();
 
     // Once 10% of the threads in Phase 1 have completed Phase 2, the peak phase, should begin.
@@ -113,7 +119,7 @@ public class SkierClient2 {
     CountDownLatch startPhase3 = new CountDownLatch((int) (numThreads * 0.1));
     CountDownLatch countDownLatch2 = new CountDownLatch(numThreads);
     runSkier(numThreads, skierTranche2, safeParamMap, 0.6, 91, 360,
-        client, startPhase3, countDownLatch2, serverAddress);
+        client, startPhase3, countDownLatch2, serverAddress, file);
     startPhase3.await();
 
     // Finally, once 10% of the threads in Phase 2 complete, Phase 3 should begin. Phase 3, the
@@ -122,7 +128,7 @@ public class SkierClient2 {
     CountDownLatch countDownLatch3 = new CountDownLatch(threadTranche);
     CountDownLatch dummyLatch = new CountDownLatch(0);
     runSkier(threadTranche, skierTranche, safeParamMap, 0.1, 361, 420,
-        client, countDownLatch3, dummyLatch, serverAddress);
+        client, countDownLatch3, dummyLatch, serverAddress, file);
 
     countDownLatch1.await();
     countDownLatch2.await();
@@ -143,5 +149,15 @@ public class SkierClient2 {
     System.out.println("The total throughput in requests per second "
         + "(total number of requests/wall time): " + throughput);
 
+    JSONReader JSONReader = new JSONReader(file);
+    List<ResponseData> data = JSONReader.getResponseDataList();
+
+    ProcessResponseData processResponseData = new ProcessResponseData(data, durationMS);
+    System.out.println("Mean response time in MS: " + processResponseData.getMeanResponseTime());
+    System.out.println("Median response time in MS: " + processResponseData.getMedianResponseTime());
+    System.out.println("Throughput (requests / wall time): " + processResponseData.getThroughput());
+    System.out.println("99th Percentile in MS: " + processResponseData.getPercentile99());
+    System.out.println("Max Response Time: " + processResponseData.getMaxResponseTime());
   }
+
 }

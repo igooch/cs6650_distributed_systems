@@ -148,11 +148,6 @@ public class Skier2Runnable implements Runnable {
         e.printStackTrace();
       }
 
-      // TODO remove this if this doesn't work
-      if (statusStr.equals("")) {
-        this.incFailed();
-      }
-
     }
 
     // Write response times to csv file
