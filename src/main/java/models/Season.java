@@ -28,7 +28,7 @@ public class Season {
 
   @Override
   public String toString() {
-    return "models.Season{" +
+    return "{" +
         "time=" + time +
         ", liftID=" + liftID +
         '}';

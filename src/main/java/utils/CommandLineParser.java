@@ -5,7 +5,7 @@ import java.util.Map;
 
 /**
  *  Parses the five args that must be entered into the command line in the below order:
- * 1. maximum number of threads to run (numThreads - max 256)
+ * 1. maximum number of threads to run (numThreads - max 512)
  * 2. number of skier to generate lift rides for (numSkiers - max 100000),
  *    This is effectively the skier’s ID (skierID)
  * 3. number of ski lifts (numLifts - range 5-60, default 40)
@@ -19,11 +19,11 @@ public class CommandLineParser {
     try {
       maxThread = Integer.parseInt(arg);
     } catch (NumberFormatException e) {
-      System.out.println("MaxThreads must be a positive Integer - max 256");
+      System.out.println("MaxThreads must be a positive Integer - max 512");
       return -1;
     }
-    if (maxThread < 0 || maxThread > 256) {
-      System.out.println("MaxThreads must be a positive Integer - max 256");
+    if (maxThread < 0 || maxThread > 512) {
+      System.out.println("MaxThreads must be a positive Integer - max 512");
       return -1;
     }
     return maxThread;
