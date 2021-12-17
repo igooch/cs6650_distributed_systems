@@ -53,6 +53,24 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-bom -->
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-bom</artifactId>
+      <version>1.12.104</version>
+      <type>pom</type>
+    </dependency>
+
+
+    <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sqs -->
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-sqs</artifactId>
+      <version>1.12.104</version>
+    </dependency>
+
+
   </dependencies>
 
 </project>

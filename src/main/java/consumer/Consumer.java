@@ -5,8 +5,6 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class Consumer {
   public static final String QUEUE_NAME = "SkierQueue";

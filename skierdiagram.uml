@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement />
+  <nodes>
+    <node x="1155.5" y="91.0">JSONWriter</node>
+    <node x="833.5000000000001" y="554.0">Skier2Runnable</node>
+    <node x="250.5" y="1160.0">SkierClient2</node>
+    <node x="1825.5" y="662.5">SkierServlet</node>
+    <node x="10.5" y="463.0">ProcessResponseData</node>
+    <node x="1486.5" y="1176.0">CommandLineParser</node>
+    <node x="2037.3180555555555" y="56.0">Season</node>
+    <node x="1639.9999999999998" y="-22.999999999999545">Skier</node>
+    <node x="2294.5" y="558.0">SkierRunnable</node>
+    <node x="482.05902777777794" y="0.0">ResponseData</node>
+    <node x="2101.5590277777783" y="1151.0">SkierClient</node>
+    <node x="482.5" y="684.0">JSONReader</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="Skier2Runnable" target="Season">
+      <point x="241.25" y="-227.5" />
+      <point x="1557.25" y="423.0" />
+      <point x="2054.1180555555557" y="401.0" />
+      <point x="-67.20000000000005" y="123.5" />
+    </edge>
+    <edge source="SkierClient2" target="ResponseData">
+      <point x="-347.8125" y="-97.0" />
+      <point x="300.1875" y="1140.0" />
+      <point x="0.0" y="1140.0" />
+      <point x="0.0" y="433.0" />
+      <point x="507.80902777777794" y="433.0" />
+      <point x="-128.75" y="201.5" />
+    </edge>
+    <edge source="SkierClient2" target="ProcessResponseData">
+      <point x="-248.4375" y="-97.0" />
+      <point x="399.5625" y="1130.0" />
+      <point x="123.5" y="1130.0" />
+      <point x="-113.0" y="318.5" />
+    </edge>
+    <edge source="ProcessResponseData" target="ResponseData">
+      <point x="0.0" y="-318.5" />
+      <point x="236.5" y="443.0" />
+      <point x="559.3090277777779" y="443.0" />
+      <point x="-77.25" y="201.5" />
+    </edge>
+    <edge source="SkierClient" target="CommandLineParser">
+      <point x="-256.0" y="-84.0" />
+      <point x="2229.5590277777783" y="1118.0" />
+      <point x="1726.75" y="1118.0" />
+      <point x="78.75" y="83.5" />
+    </edge>
+    <edge source="SkierClient" target="SkierRunnable">
+      <point x="0.0" y="-84.0" />
+      <point x="2485.5590277777783" y="1118.0" />
+      <point x="2488.25" y="1118.0" />
+      <point x="-193.75" y="201.5" />
+    </edge>
+    <edge source="JSONReader" target="ResponseData">
+      <point x="-82.75" y="-97.5" />
+      <point x="565.25" y="443.0" />
+      <point x="610.8090277777779" y="443.0" />
+      <point x="-25.75" y="201.5" />
+    </edge>
+    <edge source="SkierClient2" target="JSONReader">
+      <point x="-49.6875" y="-97.0" />
+      <point x="598.3125" y="1140.0" />
+      <point x="565.25" y="1140.0" />
+      <point x="-82.75" y="97.5" />
+    </edge>
+    <edge source="SkierClient2" target="Skier2Runnable">
+      <point x="149.0625" y="-97.0" />
+      <point x="797.0625" y="1120.0" />
+      <point x="1074.75" y="1120.0" />
+      <point x="-241.25" y="227.5" />
+    </edge>
+    <edge source="SkierClient2" target="CommandLineParser">
+      <point x="347.8125" y="-97.0" />
+      <point x="995.8125" y="1140.0" />
+      <point x="1897.25" y="1140.0" />
+      <point x="-78.75" y="83.5" />
+    </edge>
+    <edge source="SkierServlet" target="Season">
+      <point x="0.0" y="-97.0" />
+      <point x="2050.0" y="421.0" />
+      <point x="2121.3180555555555" y="421.0" />
+      <point x="0.0" y="123.5" />
+    </edge>
+    <edge source="Skier2Runnable" target="JSONWriter">
+      <point x="-80.41666666666652" y="-227.5" />
+      <point x="-80.25" y="110.5" />
+    </edge>
+    <edge source="Skier2Runnable" target="ResponseData">
+      <point x="-402.0833333333335" y="-227.5" />
+      <point x="913.9166666666666" y="433.0" />
+      <point x="713.8090277777779" y="433.0" />
+      <point x="77.25" y="201.5" />
+    </edge>
+    <edge source="SkierRunnable" target="Season">
+      <point x="-193.75" y="-201.5" />
+      <point x="2488.25" y="421.0" />
+      <point x="2154.918055555556" y="421.0" />
+      <point x="33.59999999999991" y="123.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.5000000000000001" x="1635.9999999999995" y="867.9999999999998" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Inner Classes</Category>
+    <Category>Methods</Category>
+    <Category>Constructors</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
