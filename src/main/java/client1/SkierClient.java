@@ -3,7 +3,6 @@ package client1;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
@@ -16,7 +15,7 @@ import utils.CommandLineParser;
  * loads on the server.
  **/
 public class SkierClient {
-  private static final int MINSKILIFTS = 5;
+  public static final int MINSKILIFTS = 5;
   private static AtomicInteger successfulRequests = new AtomicInteger(0);
   private static AtomicInteger failedRequests = new AtomicInteger(0);
 
@@ -32,12 +31,8 @@ public class SkierClient {
         end = start + skierTranche;
       }
       int numRequests = (int) (safeParamMap.get("meanRuns")*percentage) * skierTranche;
-      int randSkierID = ThreadLocalRandom.current().nextInt(start, end + 1);
-      int randLiftID = ThreadLocalRandom.current().nextInt(MINSKILIFTS,
-          safeParamMap.get("skiLifts") + 1);
-      int randTime = ThreadLocalRandom.current().nextInt(timeStart, timeEnd);
       SkierRunnable newSkier = new SkierRunnable(successfulRequests, failedRequests, latch1, latch2,
-          numRequests, randSkierID, randLiftID, randTime, client, serverAddress);
+          numRequests, client, serverAddress, timeStart, timeEnd, start, end, safeParamMap);
       new Thread(newSkier).start();
     }
   }

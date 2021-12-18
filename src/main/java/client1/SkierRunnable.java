@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import models.Season;
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
@@ -19,38 +21,48 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 
 public class SkierRunnable implements Runnable {
 
-  // Uses default values for resort ID: 12, season ID: 2019, dayID: 1
-  private static final String SKIERURL = "skiers/12/seasons/2019/days/1/skiers/";
+  // Uses default value for season ID: 2019
+  // TODO: Use a string builder or something, because this is ridic
+  private static final String SKIERURLSTART = "skiers/";
+  private static final String SKIERURLMID1 = "/seasons/2019/days/";
+  private static final String SKIERURLMID2 = "/skiers/";
   private static final Gson gson = new Gson();
+  private static final int MINSKILIFTS = SkierClient.MINSKILIFTS;
 
   AtomicInteger successReqCount;
   AtomicInteger failedReqCount;
   CountDownLatch latch1;
   CountDownLatch latch2;
   int numRequests;
-  Season season;
-  String url;
   HttpClient client;
+  String serverAddress;
+  int timeStart;
+  int timeEnd;
+  int start;
+  int end;
+  Map<String, Integer> safeParamMap;
 
   /**
    * Sets up runnable to make a post request  to
    * {serverAddress}skiers/{resortID}/seasons/{seasonID}/days/{dayID}/skiers/{skierID}
    * with body {"time": 217,"liftID": 21}
-   * @param skierID a skierID from the range of ids passed to the thread
-   * @param liftID a lift number (liftID)
-   * @param time a time value from the range of minutes passed to each thread (between start and end time)
    */
   public SkierRunnable(AtomicInteger successReqCount, AtomicInteger failedReqCount,
-      CountDownLatch latch1, CountDownLatch latch2, int numRequests, int skierID, int liftID,
-      int time, HttpClient client, String serverAddress) {
+      CountDownLatch latch1, CountDownLatch latch2, int numRequests, HttpClient client,
+      String serverAddress, int timeStart, int timeEnd, int start, int end,
+      Map<String, Integer> safeParamMap) {
     this.successReqCount = successReqCount;
     this.failedReqCount = failedReqCount;
     this.latch1 = latch1;
     this.latch2 = latch2;
     this.numRequests = numRequests;
-    this.season = new Season(time, liftID);
     this.client = client;
-    this.url = serverAddress + SKIERURL + skierID;
+    this.serverAddress = serverAddress;
+    this.timeStart = timeStart;
+    this.timeEnd = timeEnd;
+    this.start = start;
+    this.end = end;
+    this.safeParamMap = safeParamMap;
   }
 
   public void incSuccess() { this.successReqCount.getAndAdd(1);}
@@ -72,11 +84,24 @@ public class SkierRunnable implements Runnable {
   @Override
   public void run() {
     for (int i = 0; i < this.numRequests; i++) {
-      PostMethod postMethod = new PostMethod(this.url);
+      // create random request parameters (skier id, resort id, day, time, liftid)
+      String randSkierID = String.valueOf(ThreadLocalRandom.current().nextInt(start, end + 1));
+      // Random resort ID (based on Vail Resorts currently owning 37 mountain resorts)
+      String resortID = String.valueOf(ThreadLocalRandom.current().nextInt(1, 38));
+      String day = String.valueOf(ThreadLocalRandom.current().nextInt(1, 366));
+      String url = this.serverAddress + SKIERURLSTART + resortID + SKIERURLMID1 + day + SKIERURLMID2 + randSkierID;
+
+      // Create request body { "time": x, "liftID": y }
+      int time = ThreadLocalRandom.current().nextInt(timeStart, timeEnd);
+      int randLiftID = ThreadLocalRandom.current().nextInt(MINSKILIFTS,
+          safeParamMap.get("skiLifts") + 1);
+      Season season = new Season(time, randLiftID);
+
+      PostMethod postMethod = new PostMethod(url);
       StringRequestEntity requestEntity = null;
       try {
         requestEntity = new StringRequestEntity(
-            gson.toJson(this.season),
+            gson.toJson(season),
             "application/json",
             "UTF-8");
       } catch (UnsupportedEncodingException e) {

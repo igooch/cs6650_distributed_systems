@@ -1,19 +1,15 @@
 package models;
 
-import java.util.logging.Logger;
-
 public class Skier {
-
-  private static final Logger LOGGER = Logger.getLogger( Skier.class.getName() );
 
   int resortID;
   String seasonID;
   //  dayID minimum: 1
   //  dayID maximum: 366
-  String dayID;
+  int dayID;
   int skierID;
 
-  public Skier(int resortID, String seasonID, String dayID, int skierID) {
+  public Skier(int resortID, String seasonID, int dayID, int skierID) {
     this.resortID = resortID;
     this.seasonID = seasonID;
     this.dayID = dayID;
@@ -21,7 +17,11 @@ public class Skier {
   }
 
   public int getResortID() {
-    return resortID;
+    return this.resortID;
+  }
+
+  public String getResortIDString() {
+    return String.valueOf(this.resortID);
   }
 
   public void setResortID(int resortID) {
@@ -29,33 +29,28 @@ public class Skier {
   }
 
   public String getSeasonID() {
-    return seasonID;
+    return this.seasonID;
   }
 
   public void setSeasonID(String seasonID) {
     this.seasonID = seasonID;
   }
 
-  public String getDayID() {
-    return dayID;
+  public void setDayID(int dayID) {this.dayID = dayID; }
+
+  public int getDayID() {
+    return this.dayID;
   }
 
-  public void setDayID(String dayID) {
-    try {
-      int day = Integer.parseInt(dayID);
-      if (day < 1 || day > 366){
-        this.dayID = dayID;
-      }
-    } catch (NumberFormatException e) {
-      LOGGER.log(null, "Number format error. DayID must be a string between 1 and 366 inclusive.", e);
-    }
-  }
+  public String getDayIDString() { return String.valueOf(this.dayID); }
 
   public int getSkierID() {
-    return skierID;
+    return this.skierID;
   }
 
   public void setSkierID(int skierID) {
     this.skierID = skierID;
   }
+
+  public String getSkierIDString() { return String.valueOf(this.skierID); }
 }

@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import models.Season;
+import models.Skier;
 
 @WebServlet(name = "utils.SkierServlet")
 public class SkierServlet extends HttpServlet {
@@ -32,8 +33,12 @@ public class SkierServlet extends HttpServlet {
     // Validate request body
     try {
       Season season = gson.fromJson(request.getReader(), Season.class);
-      // Validate URL parameters
-      validateRequest(request, response);
+      // Validate URL parameters and Create Skier object from URL
+      Skier skier = validatePostRequest(request, response);
+      // If skier is null, did not pass validation. Response sent within validatePostRequest.
+      if (skier == null) {
+        return;
+      }
 
       // Assumes SkierQueue exists in AWS
       AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
@@ -43,6 +48,18 @@ public class SkierServlet extends HttpServlet {
       messageAttributes.put("URL", new MessageAttributeValue()
           .withDataType("String")
           .withStringValue(request.getPathInfo()));
+      messageAttributes.put("skierID", new MessageAttributeValue()
+          .withDataType("Number")
+          .withStringValue(skier.getSkierIDString()));
+      messageAttributes.put("skiDay", new MessageAttributeValue()
+          .withDataType("Number")
+          .withStringValue(skier.getDayIDString()));
+      messageAttributes.put("liftID", new MessageAttributeValue()
+          .withDataType("Number")
+          .withStringValue(season.getLiftIDString()));
+      messageAttributes.put("resortID", new MessageAttributeValue()
+          .withDataType("String")
+          .withStringValue(skier.getResortIDString()));
 
       SendMessageRequest send_msg_request = new SendMessageRequest()
           .withQueueUrl(queue_url)
@@ -51,7 +68,7 @@ public class SkierServlet extends HttpServlet {
       sqs.sendMessage(send_msg_request);
 
     } catch (JsonParseException e) {
-      System.out.println("models.Skier post request must have time: int and liftId: int in the body.");
+      response.getWriter().write("models.Skier post request must have time: int and liftId: int in the body.");
     }
 
 
@@ -60,6 +77,33 @@ public class SkierServlet extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     validateRequest(request, response);
+  }
+
+  private Skier validatePostRequest(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    response.setContentType("text/plain");
+    String urlPath = request.getPathInfo();
+
+    // check we have a URL!
+    if (urlPath == null || urlPath.isEmpty()) {
+      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      response.getWriter().write("missing parameters");
+      return null;
+    }
+
+    String[] urlParts = urlPath.split("/");
+    // ex: urlParts = [, 1, seasons, 2019, day, 1, skier, 123]
+    // Validate url path for skier post request and return the response status code
+    // Also returns a skier object is the post request is valid
+    try {
+      Skier skier = new Skier(Integer.parseInt(urlParts[1]), urlParts[3], Integer.parseInt(urlParts[5]), Integer.parseInt(urlParts[7]));
+      response.setStatus(HttpServletResponse.SC_OK);
+      return skier;
+    } catch (NumberFormatException | NullPointerException e) {
+      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      response.getWriter().write("Enter request with format .../{resortID}/seasons/{seasonID}/days/{dayID}/skiers/{skierID}");
+      return null;
+    }
   }
 
   private void validateRequest(HttpServletRequest request, HttpServletResponse response)

@@ -22,15 +22,16 @@ public class Season {
     return this.liftID;
   }
 
+  public String getLiftIDString() {
+    return String.valueOf(this.liftID);
+  }
+
   public void setLiftID(int liftID) {
     this.liftID = liftID;
   }
 
   @Override
   public String toString() {
-    return "{" +
-        "time=" + time +
-        ", liftID=" + liftID +
-        '}';
+    return "{\"time\": " + time + ", \"liftID\": " + liftID + "}";
   }
 }
