@@ -98,11 +98,11 @@ public class SkierServlet extends HttpServlet {
     }
 
     String[] urlParts = urlPath.split("/");
-    // ex: urlParts = [, 1, seasons, 2019, day, 1, skier, 123]
+    // ex: urlParts = [, skiers, 1, seasons, 2019, day, 1, skier, 123]
     // Validate url path for skier post request and return the response status code
     // Also returns a skier object is the post request is valid
     try {
-      Skier skier = new Skier(Integer.parseInt(urlParts[1]), urlParts[3], Integer.parseInt(urlParts[5]), Integer.parseInt(urlParts[7]));
+      Skier skier = new Skier(Integer.parseInt(urlParts[2]), urlParts[4], Integer.parseInt(urlParts[6]), Integer.parseInt(urlParts[8]));
       response.setStatus(HttpServletResponse.SC_OK);
       return skier;
     } catch (NumberFormatException | NullPointerException e) {
@@ -127,24 +127,26 @@ public class SkierServlet extends HttpServlet {
     }
 
     String[] urlParts = urlPath.split("/");
+
     // /resorts/{resortID}/seasons/{seasonID}/day/{dayID}/skiers
     // get number of unique skiers at resort/season/day
-    if (urlParts[0].equals("resorts")) {
+    if (urlParts[1].equals("resorts")) {
       try {
-        ResortDay resortDay = new ResortDay(Integer.parseInt(urlParts[1]), urlParts[3],
-            Integer.parseInt(urlParts[5]), new ArrayList<>());
+        ResortDay resortDay = new ResortDay(Integer.parseInt(urlParts[2]), urlParts[4],
+            Integer.parseInt(urlParts[6]), new ArrayList<>());
         String numSkiers = String.valueOf(getNumSkiers(resortDay));
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write(numSkiers);
       } catch (NullPointerException | NumberFormatException e) {
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        response.getWriter().write("Enter request with format .../resorts/{resortID}/seasons/{seasonID}/days/{dayID}/skiers");
+        response.getWriter().write(
+            "Enter request with format .../resorts/{resortID}/seasons/{seasonID}/days/{dayID}/skiers");
       }
       // /skiers/{skierID}/vertical
       // get the total verticals for the skier for all seasons and all resorts
-    } else if (urlParts[0].equals("skiers") && urlParts.length == 3) {
+    } else if (urlParts[1].equals("skiers") && urlParts.length == 4) {
       try {
-        Skier skier = new Skier(-1, "", -1, Integer.parseInt(urlParts[1]));
+        Skier skier = new Skier(-1, "", -1, Integer.parseInt(urlParts[2]));
         String verticals = String.valueOf(getSkierVertical(skier));
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write(verticals);
@@ -154,15 +156,17 @@ public class SkierServlet extends HttpServlet {
       }
       // /skiers/{resortID}/seasons/{seasonID}/days/{dayID}/skiers/{skierID}
       // get the total vertical for the skier for at the specified resort for the specified season on the specified day
-    } else if (urlParts[0].equals("skiers")) {
+    } else if (urlParts[1].equals("skiers")) {
       try {
-        Skier skier = new Skier(Integer.parseInt(urlParts[1]), urlParts[3], Integer.parseInt(urlParts[5]), Integer.parseInt(urlParts[7]));
+        Skier skier = new Skier(Integer.parseInt(urlParts[2]), urlParts[4],
+            Integer.parseInt(urlParts[6]), Integer.parseInt(urlParts[8]));
         String vertical = String.valueOf(getSkierVerticalByDay(skier));
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write(vertical);
       } catch (NullPointerException | NumberFormatException e) {
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        response.getWriter().write("Enter request with format .../skiers/{skierID}/vertical");
+        response.getWriter().write(
+            "Enter request with format .../skiers/{resortID}/seasons/{seasonID}/days/{dayID}/skiers/{skierID}");
       }
     } else {
       response.setStatus(HttpServletResponse.SC_NOT_FOUND);
