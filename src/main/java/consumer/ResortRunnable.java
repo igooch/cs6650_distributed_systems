@@ -49,7 +49,7 @@ public class ResortRunnable  implements Runnable {
         String resortID = m.getMessageAttributes().get("resortID").getStringValue();
         // expected message body format: { "time": 217, "liftID": 21}
         Season season = gson.fromJson(m.getBody(), Season.class);
-        String rideHour = String.valueOf(Math.floorDiv(season.getLiftID(), 60));
+        String rideHour = String.valueOf(Math.floorDiv(season.getTime(), 60));
 
         // Checks if resortID + skiDay is already an item in the table.
         ResortItem resortRetrieved = mapper.load(ResortItem.class, resortID, skiDay);

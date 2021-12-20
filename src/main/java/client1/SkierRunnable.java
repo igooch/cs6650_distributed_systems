@@ -87,8 +87,10 @@ public class SkierRunnable implements Runnable {
       // create random request parameters (skier id, resort id, day, time, liftid)
       String randSkierID = String.valueOf(ThreadLocalRandom.current().nextInt(start, end + 1));
       // Random resort ID (based on Vail Resorts currently owning 37 mountain resorts)
-      String resortID = String.valueOf(ThreadLocalRandom.current().nextInt(1, 38));
-      String day = String.valueOf(ThreadLocalRandom.current().nextInt(1, 366));
+//      String resortID = String.valueOf(ThreadLocalRandom.current().nextInt(1, 38));
+      String resortID = "123";
+//      String day = String.valueOf(ThreadLocalRandom.current().nextInt(1, 366));
+      String day = "3";
       String url = this.serverAddress + SKIERURLSTART + resortID + SKIERURLMID1 + day + SKIERURLMID2 + randSkierID;
 
       // Create request body { "time": x, "liftID": y }

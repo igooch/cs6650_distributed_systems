@@ -1,19 +1,30 @@
 package server;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.MessageAttributeValue;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+import dbItems.ResortItem;
+import dbItems.SkierItem;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import models.ResortDay;
 import models.Season;
 import models.Skier;
 
@@ -21,6 +32,8 @@ import models.Skier;
 public class SkierServlet extends HttpServlet {
 
   public static final String QUEUE_NAME = "SkierQueue";
+  private static final AmazonDynamoDB ddb = AmazonDynamoDBClientBuilder.defaultClient();
+  private static final DynamoDBMapper mapper = new DynamoDBMapper(ddb);
   private final Gson gson = new Gson();
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -70,13 +83,6 @@ public class SkierServlet extends HttpServlet {
     } catch (JsonParseException e) {
       response.getWriter().write("models.Skier post request must have time: int and liftId: int in the body.");
     }
-
-
-  }
-
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
-    validateRequest(request, response);
   }
 
   private Skier validatePostRequest(HttpServletRequest request, HttpServletResponse response)
@@ -106,8 +112,10 @@ public class SkierServlet extends HttpServlet {
     }
   }
 
-  private void validateRequest(HttpServletRequest request, HttpServletResponse response)
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
+    // Determine Which Get request to execute
+
     response.setContentType("text/plain");
     String urlPath = request.getPathInfo();
 
@@ -119,76 +127,90 @@ public class SkierServlet extends HttpServlet {
     }
 
     String[] urlParts = urlPath.split("/");
-    // and now validate url path and return the response status code
-    // (and maybe also some value if input is valid)
-
-    if (!isUrlValid(urlParts)) {
-      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-    } else {
-      response.setStatus(HttpServletResponse.SC_OK);
-      // do any sophisticated processing with urlParts which contains all the url params
-      // TODO: process url params in `urlParts
-      response.getWriter().write("Here you go! ");
-    }
-  }
-
-  /**
-   * Validates the request url path according to the API specs at:
-   * https://app.swaggerhub.com/apis/cloud-perf/SkiDataAPI/1.1#/skiers/getSkierDayVertical
-   * https://app.swaggerhub.com/apis/cloud-perf/SkiDataAPI/1.1#/skiers/writeNewLiftRide
-   * .../{resortID}/seasons/{seasonID}/days/{dayID}/skiers/{skierID}
-   * urlPath  = "/1/seasons/2019/day/1/skier/123"
-   * @param urlParts ex: urlParts = [, 1, seasons, 2019, day, 1, skier, 123]
-   * @return True if URL is valid else, False
-   */
-  private boolean isUrlValid(String[] urlParts) {
-
-
-    if (urlParts.length != 8) {
-      return false;
-    }
-    // Check first value is empty string
-    if (!urlParts[0].equals("")) {
-      return false;
-    }
-    // Check second value {resortID} is an integer.
-    try {
-      Integer.valueOf(urlParts[1]);
-    } catch (NumberFormatException e) {
-      return false;
-    }
-//    // Check third value is "seasons".
-//    if (!urlParts[2].equals("seasons")) {
-//      return false;
-//    }
-    // Check fourth value {seasonID} is a non-empty string.
-    if (urlParts[3] == null || urlParts[3].isEmpty()) {
-      return false;
-    }
-//    // Check fifth value is "days".
-//    if (!urlParts[4].equals("days")) {
-//      return false;
-//    }
-    // Check sixth value {dayID} is a number between 1 and 366.
-    try {
-      int day = Integer.parseInt(urlParts[5]);
-      if (day < 1 || day > 366){
-        return false;
+    // /resorts/{resortID}/seasons/{seasonID}/day/{dayID}/skiers
+    // get number of unique skiers at resort/season/day
+    if (urlParts[0].equals("resorts")) {
+      try {
+        ResortDay resortDay = new ResortDay(Integer.parseInt(urlParts[1]), urlParts[3],
+            Integer.parseInt(urlParts[5]), new ArrayList<>());
+        String numSkiers = String.valueOf(getNumSkiers(resortDay));
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(numSkiers);
+      } catch (NullPointerException | NumberFormatException e) {
+        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        response.getWriter().write("Enter request with format .../resorts/{resortID}/seasons/{seasonID}/days/{dayID}/skiers");
       }
-    } catch (NumberFormatException e) {
-      return false;
+      // /skiers/{skierID}/vertical
+      // get the total verticals for the skier for all seasons and all resorts
+    } else if (urlParts[0].equals("skiers") && urlParts.length == 3) {
+      try {
+        Skier skier = new Skier(-1, "", -1, Integer.parseInt(urlParts[1]));
+        String verticals = String.valueOf(getSkierVertical(skier));
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(verticals);
+      } catch (NullPointerException | NumberFormatException e) {
+        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        response.getWriter().write("Enter request with format .../skiers/{skierID}/vertical");
+      }
+      // /skiers/{resortID}/seasons/{seasonID}/days/{dayID}/skiers/{skierID}
+      // get the total vertical for the skier for at the specified resort for the specified season on the specified day
+    } else if (urlParts[0].equals("skiers")) {
+      try {
+        Skier skier = new Skier(Integer.parseInt(urlParts[1]), urlParts[3], Integer.parseInt(urlParts[5]), Integer.parseInt(urlParts[7]));
+        String vertical = String.valueOf(getSkierVerticalByDay(skier));
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(vertical);
+      } catch (NullPointerException | NumberFormatException e) {
+        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        response.getWriter().write("Enter request with format .../skiers/{skierID}/vertical");
+      }
+    } else {
+      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      response.getWriter().write("Sorry, something went downhill. Unable to parse url: ");
+      response.getWriter().write(urlPath);
+      response.getWriter().write(Arrays.toString(urlParts));
     }
-//    // Check seventh value is "skiers".
-//    if (!urlParts[6].equals("skiers")) {
-//      return false;
-//    }
-    // Check eighth and final value {skierID} is an integer.
-    try {
-      Integer.valueOf(urlParts[7]);
-    } catch (NumberFormatException e) {
-      return false;
-    }
-    // If we passed all the above validation, this URL fits the Swagger schema
-    return true;
+
   }
+
+  private int getSkierVertical(Skier skier) {
+    // Get total of all skier verticals
+    Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+    eav.put(":v1", new AttributeValue().withS(skier.getSkierIDString()));
+
+    DynamoDBQueryExpression<SkierItem> queryExpression = new DynamoDBQueryExpression<SkierItem>()
+        .withKeyConditionExpression("skierID = :v1")
+        .withExpressionAttributeValues(eav);
+
+    List<SkierItem> skiers = mapper.query(SkierItem.class, queryExpression);
+    if (skiers == null || skiers.size() == 0) {
+      return 0;
+    }
+    int verticals = 0;
+    for (SkierItem s : skiers) {
+      verticals += s.getVerticals();
+    }
+    return verticals;
+  }
+
+  private int getSkierVerticalByDay(Skier skier) {
+    // Get vertical for skier for a specific day
+    SkierItem skierItem = mapper.load(SkierItem.class, skier.getSkierIDString(), skier.getDayIDString());
+    if (skierItem == null) {
+      return 0;
+    }
+    return skierItem.getVerticals();
+  }
+
+  private int getNumSkiers(ResortDay resortDay){
+    // Gets number of unique skiers on a particular resort/day
+    ResortItem resortItem = mapper.load(ResortItem.class, resortDay.getResortIDString(), resortDay.getDayIDString());
+    if (resortItem == null) {
+      return 0;
+    }
+    return resortItem.getSkierIDs().size();
+  }
+
+
+
 }
